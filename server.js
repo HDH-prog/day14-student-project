@@ -101,15 +101,17 @@ app.get("/students/search", async function (request, response, next) {
 });
 
 app.get("/students", async function (request, response, next) {
-  try {
-    // TODO:
-    // 1. students table에서 id, name, score를 조회합니다.
-    // 2. id 오름차순으로 정렬합니다.
-    // 3. rows를 response.json(rows)로 응답합니다.
-    sendTodo(response, "GET /students");
-  } catch (error) {
-    next(error);
-  }
+    try {
+        // 1. students table에서 id, name, score를 조회합니다.
+        // 2. id 오름차순으로 정렬합니다.
+        const [rows] = await pool.query(
+        "SELECT id, name, score FROM students ORDER BY id ASC"
+        );
+        // 3. rows를 response.json(rows)로 응답합니다.
+        response.json(rows);
+    } catch (error) {
+        next(error);
+    }
 });
 
 app.post("/students", async function (request, response, next) {
