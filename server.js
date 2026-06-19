@@ -168,17 +168,40 @@ app.get("/students/:id", async function (request, response, next) {
 });
 
 app.patch("/students/:id", async function (request, response, next) {
-  try {
-    // TODO:
-    // 1. id를 검사합니다.
-    // 2. 수정할 학생이 있는지 조회합니다.
-    // 3. readStudentBody(request.body)로 body를 검사합니다.
-    // 4. UPDATE로 name, score를 수정합니다.
-    // 5. 수정된 학생을 다시 조회해서 응답합니다.
-    sendTodo(response, "PATCH /students/:id");
-  } catch (error) {
+    try {
+        // 1. id를 검사합니다.
+        const id = isIntegerId(request.params.id);
+        if (id === null) {
+            response.status(400)
+            return;
+        }
+
+        // 2. 수정할 학생이 있는지 조회합니다.
+        const existingStudent = await findStudentById(id);
+        if (existingStudent === undefined) {
+            response.status(404)
+        return;
+        }
+
+        // 3. readStudentBody(request.body)로 body를 검사합니다.
+        const student = readStudentBody(request.body);
+        if (student === null) {
+            response.status(400)
+        return;
+        }
+
+        // 4. UPDATE로 name, score를 수정합니다.
+        await pool.query(
+            "UPDATE students SET name = ?, score = ? WHERE id = ?",
+            [student.name, student.score, id]
+        );
+
+        // 5. 수정된 학생을 다시 조회해서 응답합니다.
+        const updatedStudent = await findStudentById(id);
+            response.json(updatedStudent);
+    } catch (error) {
     next(error);
-  }
+    }
 });
 
 app.delete("/students/:id", async function (request, response, next) {
